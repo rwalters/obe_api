@@ -1,0 +1,10 @@
+<p style="color: green"><%= notice %></p>
+
+<h1>Characters</h1>
+
+<div id="characters">
+  <% @characters.each do |character| %>
+    <%= render character %>
+    <hr />
+  <% end %>
+</div>
