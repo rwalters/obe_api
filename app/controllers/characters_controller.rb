@@ -2,10 +2,31 @@ class CharactersController < ApplicationController
   before_action :set_character, only: %i[ show edit update destroy ]
 
   def search
+    query = RMApi::Client.parse <<-'GRAPHQL'
+  query($name: Name) {
+    characters(filter: {name: $name}) {
+    results {
+      name
+      status
+      species
+      gender
+      episode {
+        episode
+      }
+    }
+  }
+    GRAPHQL
+
     search_name = params.require(:name)
-    puts "\n\n\n=====\n"
+    puts "\n\n\n=====\nNAME PARAM\n"
     p search_name
     puts "\n\n\n=====\n"
+
+    result = RMApi::Client.query(query, variables: {name: search_name})
+    puts "\n\n\n=====\nRESULTS\n"
+    p result
+    puts "\n\n\n=====\n"
+
     @characters = Character.where(name: search_name)
   end
 
