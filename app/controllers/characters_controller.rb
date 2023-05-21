@@ -1,33 +1,32 @@
 class CharactersController < ApplicationController
   before_action :set_character, only: %i[ show edit update destroy ]
 
+  require "clients/r_m_api"
+
+  class MalformedParameter < StandardError
+    def initialize(param)
+      msg = "Parameter '#{param}' can only be letters or digits"
+      super(msg)
+    end
+  end
+
+  # GET
+  #   /characters/search?name=foo
+  # or
+  #   /characters.json/search?name=foo
   def search
-    query = RMApi::Client.parse <<-'GRAPHQL'
-  query($name: Name) {
-    characters(filter: {name: $name}) {
-    results {
-      name
-      status
-      species
-      gender
-      episode {
-        episode
-      }
-    }
-  }
-    GRAPHQL
-
     search_name = params.require(:name)
-    puts "\n\n\n=====\nNAME PARAM\n"
-    p search_name
-    puts "\n\n\n=====\n"
+    unless search_name =~ /^[[:alnum:]]+$/
+      raise MalformedParameter.new(:name)
+    end
 
-    result = RMApi::Client.query(query, variables: {name: search_name})
-    puts "\n\n\n=====\nRESULTS\n"
-    p result
-    puts "\n\n\n=====\n"
+    results = RMApi.filter(name: search_name)
 
-    @characters = Character.where(name: search_name)
+    @characters = results.map do |result|
+      Character.new(result)
+    end
+
+    @characters
   end
 
   # GET /characters or /characters.json

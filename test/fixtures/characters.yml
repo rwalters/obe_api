@@ -1,12 +1,12 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  name: MyString
-  status: MyString
-  species: MyString
-  gender: MyString
-  image: MyString
-  appearances: MyString
+  name: Chuck
+  status: Berry
+  species: Human
+  gender: Male
+  image: http://test.example/img.jpg
+  appearances: "S01:1, S02:3"
 
 two:
   name: MyString

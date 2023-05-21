@@ -25,4 +25,45 @@ module RMApi
   # Schema = GraphQL::Client.load_schema("path/to/schema.json")
 
   Client = GraphQL::Client.new(schema: Schema, execute: HTTP)
+
+  NAME_QUERY = RMApi::Client.parse <<-GRAPHQL
+  query($name: String) {
+    characters(filter: {name: $name}) {
+      results {
+        id
+        name
+        status
+        species
+        gender
+        image
+        episode {
+          episode
+        }
+      }
+    }
+  }
+  GRAPHQL
+
+  def self.filter(name:)
+    gql_response = Client.query(NAME_QUERY, variables: {name: name})
+
+    gql_response.data.characters.results.map do |result|
+      parse(result.to_h.dup)
+    end
+  end
+
+  def self.parse(char_hash)
+    appearances = Hash.new{|h,k| h[k] = 0 }
+
+    char_hash.delete("episode").map do |episode|
+      code = episode["episode"]
+      season_code = code[0..2]
+
+      appearances[season_code] += 1
+    end
+
+    char_hash["appearances"] = appearances.map{|k,v| "#{k}:#{v}" }.join(', ')
+
+    char_hash
+  end
 end
