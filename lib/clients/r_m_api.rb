@@ -53,17 +53,19 @@ module RMApi
   end
 
   def self.parse(char_hash)
-    appearances = Hash.new{|h,k| h[k] = 0 }
+    Rails.cache.fetch([:episodes, char_hash["id"]], expires_in: 10.minutes) do
+      appearances = Hash.new{|h,k| h[k] = 0 }
 
-    char_hash.delete("episode").map do |episode|
-      code = episode["episode"]
-      season_code = code[0..2]
+      char_hash.delete("episode").map do |episode|
+        code = episode["episode"]
+        season_code = code[0..2]
 
-      appearances[season_code] += 1
+        appearances[season_code] += 1
+      end
+
+      char_hash["appearances"] = appearances.map{|k,v| "#{k}:#{v}" }.join(', ')
+
+      char_hash
     end
-
-    char_hash["appearances"] = appearances.map{|k,v| "#{k}:#{v}" }.join(', ')
-
-    char_hash
   end
 end
